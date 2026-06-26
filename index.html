@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dutch Rentalz — Missed Rental Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    min-height: 100vh;
+    padding: 0 0 40px 0;
+  }
+
+  .header {
+    background: #1a1a2e;
+    color: white;
+    padding: 20px 24px 18px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: #e8a020;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    color: #1a1a2e;
+    flex-shrink: 0;
+  }
+
+  .header h1 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    line-height: 1.2;
+  }
+
+  .header p {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-top: 2px;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.15);
+    margin-top: 14px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #e8a020;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .form-body {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .section-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #e8a020;
+    margin-bottom: 14px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+  }
+
+  .req { color: #e05252; margin-left: 2px; }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #e2e5ea;
+    border-radius: 10px;
+    font-size: 15px;
+    color: #1a1a2e;
+    background: #fafbfc;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: #e8a020;
+    box-shadow: 0 0 0 3px rgba(232,160,32,0.15);
+    background: white;
+  }
+
+  .field-group { margin-bottom: 14px; }
+  .field-group:last-child { margin-bottom: 0; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Searchable item field */
+  .search-wrap { position: relative; }
+
+  .search-wrap input {
+    padding-right: 36px;
+  }
+
+  .search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aab0bb;
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  .suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1.5px solid #e8a020;
+    border-radius: 10px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    display: none;
+  }
+
+  .suggestions.open { display: block; }
+
+  .suggestion-item {
+    padding: 11px 14px;
+    font-size: 14px;
+    color: #1a1a2e;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f2f5;
+    line-height: 1.3;
+  }
+
+  .suggestion-item:last-child { border-bottom: none; }
+
+  .suggestion-item:hover, .suggestion-item.highlighted {
+    background: #fff8ec;
+    color: #c47a00;
+  }
+
+  .suggestion-item .cat-badge {
+    display: inline-block;
+    font-size: 10px;
+    background: #f0f2f5;
+    color: #6b7280;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 500;
+  }
+
+  .no-results {
+    padding: 14px;
+    font-size: 13px;
+    color: #9ca3af;
+    text-align: center;
+  }
+
+  /* Reason pills */
+  .reason-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .reason-pill {
+    padding: 12px 10px;
+    border: 1.5px solid #e2e5ea;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #4b5563;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fafbfc;
+    line-height: 1.3;
+    user-select: none;
+  }
+
+  .reason-pill:active { transform: scale(0.97); }
+
+  .reason-pill.selected {
+    border-color: #e8a020;
+    background: #fff8ec;
+    color: #c47a00;
+    font-weight: 600;
+  }
+
+  /* Category display */
+  .category-display {
+    padding: 11px 14px;
+    background: #f0f2f5;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #6b7280;
+    border: 1.5px solid transparent;
+    min-height: 46px;
+  }
+
+  .category-display.filled {
+    color: #1a1a2e;
+    font-weight: 500;
+  }
+
+  textarea {
+    resize: none;
+    height: 90px;
+    font-family: inherit;
+  }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: #1a1a2e;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.2px;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 4px;
+  }
+
+  .submit-btn:hover { background: #2d2d4e; }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+  /* Error banner */
+  .error-banner {
+    display: none;
+    background: #fef2f2;
+    border: 1.5px solid #fca5a5;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: #b91c1c;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  /* Success screen */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 40px 24px;
+  }
+
+  .success-icon {
+    width: 64px;
+    height: 64px;
+    background: #e8a020;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 28px;
+  }
+
+  .success-screen h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+  }
+
+  .success-screen p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .another-btn {
+    padding: 14px 28px;
+    background: #e8a020;
+    color: #1a1a2e;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* Validation */
+  .field-error {
+    font-size: 12px;
+    color: #e05252;
+    margin-top: 5px;
+    display: none;
+  }
+
+  .input-error {
+    border-color: #e05252 !important;
+  }
+
+  /* Not listed field */
+  .not-listed-field {
+    display: none;
+    margin-top: 10px;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 5px;
+  }
+
+  @media (max-width: 380px) {
+    .reason-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-mark">DR</div>
+    <div>
+      <h1>Dutch Rentalz</h1>
+      <p>Missed Rental Report</p>
+    </div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+</div>
+
+<div class="form-body" id="formBody">
+
+  <!-- Who & When -->
+  <div class="card">
+    <div class="section-eyebrow">Who &amp; when</div>
+
+    <div class="field-group">
+      <label for="staffName">Your name <span class="req">*</span></label>
+      <select id="staffName">
+        <option value="">Select your name...</option>
+        <option>Alison</option>
+        <option>Blake</option>
+        <option>Cedric</option>
+        <option>Chyanne</option>
+        <option>Grace</option>
+        <option>Hannah</option>
+        <option>Jared</option>
+        <option>Javon</option>
+        <option>Joey</option>
+        <option>Kari</option>
+        <option>Kyran</option>
+        <option>Logan</option>
+        <option>Matthew</option>
+        <option>Tommy</option>
+        <option>Will</option>
+        <option>Wyatt</option>
+      </select>
+      <div class="field-error" id="err-staffName">Please select your name.</div>
+    </div>
+
+    <div class="field-group">
+      <label for="rentalDate">Date of missed rental <span class="req">*</span></label>
+      <input type="date" id="rentalDate">
+      <div class="field-error" id="err-rentalDate">Please select a date.</div>
+    </div>
+  </div>
+
+  <!-- Equipment -->
+  <div class="card">
+    <div class="section-eyebrow">Equipment</div>
+
+    <div class="field-group">
+      <label for="itemSearch">Item requested <span class="req">*</span></label>
+      <div class="search-wrap">
+        <input type="text" id="itemSearch" placeholder="Type to search items..." autocomplete="off" autocorrect="off" spellcheck="false">
+        <span class="search-icon">&#9906;</span>
+        <div class="suggestions" id="suggestionBox"></div>
+      </div>
+      <input type="hidden" id="itemSelected">
+      <div class="field-error" id="err-item">Please select an item from the list.</div>
+      <div class="not-listed-field" id="notListedField">
+        <label for="itemNotListed">Describe the item <span class="req">*</span></label>
+        <input type="text" id="itemNotListed" placeholder="e.g. 36-inch laser sander">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Category</label>
+      <div class="category-display" id="categoryDisplay">Auto-fills when you select an item</div>
+    </div>
+
+    <div class="two-col">
+      <div class="field-group">
+        <label for="duration">Duration <span class="req">*</span></label>
+        <select id="duration">
+          <option value="">Select...</option>
+          <option>4 Hours</option>
+          <option>Day</option>
+          <option>Week</option>
+          <option>4 Weeks</option>
+        </select>
+        <div class="field-error" id="err-duration">Required.</div>
+      </div>
+
+      <div class="field-group">
+        <label for="quantity">Quantity <span class="req">*</span></label>
+        <input type="number" id="quantity" value="1" min="1" max="99">
+        <div class="field-error" id="err-quantity">Required.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reason -->
+  <div class="card">
+    <div class="section-eyebrow">Reason for missed rental</div>
+    <div class="reason-grid" id="reasonGrid">
+      <div class="reason-pill" data-reason="On Rent">On Rent</div>
+      <div class="reason-pill" data-reason="On Maintenance">On Maintenance</div>
+      <div class="reason-pill" data-reason="Overbooked">Overbooked</div>
+      <div class="reason-pill" data-reason="Don't Own">Don't Own</div>
+      <div class="reason-pill" data-reason="Not the Right Size/Specs">Not Right Size/Specs</div>
+      <div class="reason-pill" data-reason="Too Expensive">Too Expensive</div>
+      <div class="reason-pill" data-reason="No Insurance">No Insurance</div>
+      <div class="reason-pill" data-reason="Other">Other</div>
+    </div>
+    <div class="field-error" id="err-reason" style="display:none; margin-top:8px;">Please select a reason.</div>
+  </div>
+
+  <!-- Notes -->
+  <div class="card">
+    <div class="section-eyebrow">Additional notes</div>
+    <div class="field-group">
+      <label for="notes">Notes <span style="font-weight:400; color:#9ca3af;">(optional)</span></label>
+      <textarea id="notes" placeholder="Customer name, specific size requested, or any other context..."></textarea>
+    </div>
+  </div>
+
+  <div class="error-banner" id="errorBanner">
+    Submission failed — please check your connection and try again.<br>
+    If this keeps happening, contact Tommy.
+  </div>
+
+  <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">Submit report</button>
+  <p class="hint" style="text-align:center;">Submissions are saved automatically to your team's shared log.</p>
+
+</div>
+
+<!-- Success screen -->
+<div class="form-body" id="successScreen" style="display:none;">
+  <div class="card success-screen" style="display:block;">
+    <div class="success-icon">✓</div>
+    <h2>Report submitted</h2>
+    <p>Thanks — your missed rental has been logged. The team dashboard will update shortly.</p>
+    <button class="another-btn" onclick="resetForm()">Submit another</button>
+  </div>
+</div>
+
+<script>
+const POWER_AUTOMATE_URL = 'https://defaulta52471f31e424e63ac44afed594738.44.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/95fba6e4ca114342add1fc254349d634/triggers/manual/paths/invoke?api-version=1';
+
+const ITEMS = [{"item":"10K TELEHANDLER","category":"Forklift and Material Handling"},{"item":"118k Heater","category":"HVAC"},{"item":"12\" - TWO MAN EARTH AUGER BIT","category":"Lawn and Landscape"},{"item":"12\" 12K trenching bucket","category":"Earthmoving"},{"item":"12\" 4K trenching bucket","category":"Earthmoving"},{"item":"12\" 8K trenching bucket","category":"Earthmoving"},{"item":"12\" CHIPPER","category":"Lawn and Landscape"},{"item":"12\" EARTH AUGER BIT","category":"Lawn and Landscape"},{"item":"12K Excavator","category":"Earthmoving"},{"item":"12K grading bucket","category":"Earthmoving"},{"item":"12K Telehandler","category":"Forklift and Material Handling"},{"item":"150K Heater","category":"HVAC"},{"item":"15K Pratt EZ Ramp Hyd Trailer","category":"Vehicles and Trailers"},{"item":"15K Trailer","category":"Vehicles and Trailers"},{"item":"18\" 12K trenching bucket","category":"Earthmoving"},{"item":"18\" 19K trenching bucket","category":"Earthmoving"},{"item":"18\" 4K trenching bucket","category":"Earthmoving"},{"item":"18\" 8K trenching bucket","category":"Earthmoving"},{"item":"18\" CHIPPER","category":"Lawn and Landscape"},{"item":"18\" EARTH AUGER BIT","category":"Lawn and Landscape"},{"item":"19FT SCISSOR LIFT","category":"Mobile Elevated Work Platform"},{"item":"19K Excavator","category":"Earthmoving"},{"item":"19K grading bucket","category":"Earthmoving"},{"item":"2\" Trash Pump","category":"Pumps"},{"item":"21 INCH EXT -MAKITA","category":"Lawn and Landscape"},{"item":"22K Deckover Trl","category":"Vehicles and Trailers"},{"item":"24\" 12K trenching bucket","category":"Earthmoving"},{"item":"24\" 19K trenching bucket","category":"Earthmoving"},{"item":"24\" 33K trenching bucket","category":"Earthmoving"},{"item":"24\" 8K trenching bucket","category":"Earthmoving"},{"item":"24\" EARTH AUGER BIT","category":"Lawn and Landscape"},{"item":"24ft Deckover trailer","category":"Vehicles and Trailers"},{"item":"26FT SCISSOR LIFT","category":"Mobile Elevated Work Platform"},{"item":"2800 lb Stump Grinder","category":"Lawn and Landscape"},{"item":"3\" Semi-Trash Pump","category":"Pumps"},{"item":"30 IN OUTRIGGER","category":"Scaffolding and Ladders"},{"item":"30\" 12K trenching bucket","category":"Earthmoving"},{"item":"32' RT (Rough Terrain) Scissors","category":"Mobile Elevated Work Platform"},{"item":"33K Excavator","category":"Earthmoving"},{"item":"35FT TOWABLE LIFT","category":"Mobile Elevated Work Platform"},{"item":"36\" 12K trenching bucket","category":"Earthmoving"},{"item":"36\" 19K trenching bucket","category":"Earthmoving"},{"item":"36\" Auger Bit","category":"Lawn and Landscape"},{"item":"36\" EARTH AUGER BIT-TREE","category":"Lawn and Landscape"},{"item":"36\" Power Trowel","category":"Concrete - Paving - and Masonry"},{"item":"36\" ROLLER","category":"Compaction"},{"item":"3FT EARTH AUGER EXTENSION","category":"Lawn and Landscape"},{"item":"4\" Tsurumi Trash Pump","category":"Pumps"},{"item":"40' LADDER","category":"Scaffolding and Ladders"},{"item":"42\" 33K trenching bucket","category":"Earthmoving"},{"item":"42\" Earth Auger Bit","category":"Lawn and Landscape"},{"item":"4520P Ventrac Tractor","category":"Lawn and Landscape"},{"item":"45FT SELF-PROPELLED LIFT","category":"Mobile Elevated Work Platform"},{"item":"46\" Power Trowel","category":"Concrete - Paving - and Masonry"},{"item":"48\" Brush Cutter Mower - Ventrac","category":"Lawn and Landscape"},{"item":"48\" Earth Auger Bit","category":"Lawn and Landscape"},{"item":"48\" ROLLER","category":"Compaction"},{"item":"4FT FORKS","category":"Earthmoving"},{"item":"4k Excavator","category":"Earthmoving"},{"item":"4K Grading bucket","category":"Earthmoving"},{"item":"50ft Electrical Fish Tape","category":"Plumbing and Electrical Equipment"},{"item":"55FT SELF-PROPELLED LIFT","category":"Mobile Elevated Work Platform"},{"item":"55FT TOWABLE LIFT","category":"Mobile Elevated Work Platform"},{"item":"5K Telehander","category":"Forklift and Material Handling"},{"item":"5X3 SCAFFOLD FRAME","category":"Scaffolding and Ladders"},{"item":"5X5 SCAFFOLD FRAME","category":"Scaffolding and Ladders"},{"item":"6\" TWO MAN EARTH AUGER BIT","category":"Lawn and Landscape"},{"item":"60\" 33K Grading Bucket","category":"Earthmoving"},{"item":"65FT TOWABLE LIFT","category":"Mobile Elevated Work Platform"},{"item":"66FT BOOM LIFT","category":"Mobile Elevated Work Platform"},{"item":"67k Heater","category":"HVAC"},{"item":"6FT EARTH AUGER EXTENSION","category":"Lawn and Landscape"},{"item":"6FT FORKS","category":"Earthmoving"},{"item":"7K Pratt EZ Ramp Hyd Trailer","category":"Vehicles and Trailers"},{"item":"7K TRAILER","category":"Vehicles and Trailers"},{"item":"8\" - TWO MAN EARTH AUGER BIT","category":"Lawn and Landscape"},{"item":"8FT SCREED","category":"Concrete - Paving - and Masonry"},{"item":"8K EXCAVATOR","category":"Earthmoving"},{"item":"8K Grading bucket","category":"Earthmoving"},{"item":"8K TELEHANDLER","category":"Forklift and Material Handling"},{"item":"8K-RIPPER E35","category":"Earthmoving"},{"item":"9\" EARTH AUGER BIT","category":"Lawn and Landscape"},{"item":"Abrasive Cut-Off Machine","category":"Concrete - Paving - and Masonry"},{"item":"ADAPT PLATE-ASV","category":"Earthmoving"},{"item":"ADAPTER MT","category":"Earthmoving"},{"item":"Aerator - Self Propelled","category":"Lawn and Landscape"},{"item":"Aerator Ride On Stinger","category":"Lawn and Landscape"},{"item":"Aerator Tow Behind","category":"Lawn and Landscape"},{"item":"Aerator Walk Behind","category":"Lawn and Landscape"},{"item":"AIR COMPRESSOR 110","category":"Air Compressors and Tools"},{"item":"AIR COMPRESSOR 400","category":"Air Compressors and Tools"},{"item":"Air Mover / Carpet Dryer","category":"HVAC"},{"item":"APPL DOLLY","category":"Vehicles and Trailers"},{"item":"Articulated Loader Avant","category":"Earthmoving"},{"item":"Articulated Loader Avant Attachments","category":"Earthmoving"},{"item":"ASHLAR CUT STONE STAMPS","category":"Concrete - Paving - and Masonry"},{"item":"ASV FORKS","category":"Earthmoving"},{"item":"ASV SMOOTH BUCKET","category":"Earthmoving"},{"item":"ASV TOOTH BUCKET","category":"Earthmoving"},{"item":"Auger drive Large","category":"Earthmoving"},{"item":"Auger drive Mini","category":"Earthmoving"},{"item":"Ball Hitch 2 5/16\"","category":"Vehicles and Trailers"},{"item":"Ball Hitch 2\"","category":"Vehicles and Trailers"},{"item":"BALL PLATE","category":"Earthmoving"},{"item":"BASE PLATE-LEVELER","category":"Scaffolding and Ladders"},{"item":"BED REDEFINER KM","category":"Lawn and Landscape"},{"item":"Bed Shaper","category":"Lawn and Landscape"},{"item":"Block Forks-Attachment","category":"Forklift and Material Handling"},{"item":"Block Splitter","category":"Hand Tools"},{"item":"Branch Manager Clamshell","category":"Earthmoving"},{"item":"Breaker - Air Jack Hammer 60#","category":"Concrete - Paving - and Masonry"},{"item":"Breaker Chipping Bits","category":"Hand Tools"},{"item":"BRICK-RUNNING BOND STAMP","category":"Concrete - Paving - and Masonry"},{"item":"BROOM-CONCRETE","category":"Concrete - Paving - and Masonry"},{"item":"Brush Cutter 3 Point","category":"Earthmoving"},{"item":"Brush Mower Attachment-SKD","category":"Earthmoving"},{"item":"BULL FLOAT KIT","category":"Concrete - Paving - and Masonry"},{"item":"Cargo 5x7 ENCLOSED TRAILER","category":"Vehicles and Trailers"},{"item":"Carpet Shampooer Vac","category":"Hand Tools"},{"item":"Cart Floor Stripper","category":"Hand Tools"},{"item":"Chain and Binder","category":"Vehicles and Trailers"},{"item":"Chainsaw 20\"","category":"Lawn and Landscape"},{"item":"Chainsaw 28-30\"","category":"Lawn and Landscape"},{"item":"CHAINSAW Top Handle","category":"Lawn and Landscape"},{"item":"Chipping Air Hammer","category":"Concrete - Paving - and Masonry"},{"item":"CHUTE EXT-MUD MIXER","category":"Concrete - Paving - and Masonry"},{"item":"Circular Saw 16\"","category":"Hand Tools"},{"item":"COBBLESTONE STAMP","category":"Concrete - Paving - and Masonry"},{"item":"Compressor 100FT Hose","category":"Air Compressors and Tools"},{"item":"Compressor 50FT Hose","category":"Air Compressors and Tools"},{"item":"CONCBLADERENT","category":"Concrete - Paving - and Masonry"},{"item":"Concrete Mixer- 3.5 Cu/Ft","category":"Concrete - Paving - and Masonry"},{"item":"Concrete Mixer- 6.0 Cu/Ft","category":"Concrete - Paving - and Masonry"},{"item":"Concrete Saw - large","category":"Concrete - Paving - and Masonry"},{"item":"CORE BITS","category":"Concrete - Paving - and Masonry"},{"item":"Core Drill Rig","category":"Concrete - Paving - and Masonry"},{"item":"CROSS BRACE","category":"Scaffolding and Ladders"},{"item":"CTL102H","category":"Earthmoving"},{"item":"CTL38H","category":"Earthmoving"},{"item":"CTL68H","category":"Earthmoving"},{"item":"CTL74H","category":"Earthmoving"},{"item":"CTL92H","category":"Earthmoving"},{"item":"CUTNBREAK-ELECTRIC","category":"Concrete - Paving - and Masonry"},{"item":"CUTQUIK CART","category":"Hand Tools"},{"item":"DECK WRECKER","category":"Hand Tools"},{"item":"DEHUMIDIFIER","category":"HVAC"},{"item":"Delivery Service","category":"Sale Items"},{"item":"Dethatcher Power Rake","category":"Lawn and Landscape"},{"item":"DIAPHRAM PUMP- 3INCH","category":"Pumps"},{"item":"DLX SAFETY GDRAIL PCKG","category":"Scaffolding and Ladders"},{"item":"DOZER-20K","category":"Earthmoving"},{"item":"DRAIN CAMERA","category":"Plumbing and Electrical Equipment"},{"item":"DRAIN LOCATOR","category":"Plumbing and Electrical Equipment"},{"item":"Drain Snake 100ft","category":"Plumbing and Electrical Equipment"},{"item":"Drain Snake 35ft","category":"Plumbing and Electrical Equipment"},{"item":"Drain Snake 50ft","category":"Plumbing and Electrical Equipment"},{"item":"DRUM SANDER","category":"Floor and Surface"},{"item":"Drywall Cable Drive Lift 11ft","category":"Forklift and Material Handling"},{"item":"Drywall Cable Drive Lift Extension, Maximum Reach 15ft","category":"Forklift and Material Handling"},{"item":"Drywall Chain Drive Lift 14ft","category":"Forklift and Material Handling"},{"item":"Dt Dump Trailer 10Ft","category":"Vehicles and Trailers"},{"item":"Dt Dump Trailer 14Ft","category":"Vehicles and Trailers"},{"item":"DUALS VENTRAC","category":"Earthmoving"},{"item":"Dump Hopper 2 CuY","category":"Forklift and Material Handling"},{"item":"Dump Station","category":"Sale Items"},{"item":"EARLY ENTRY SAW","category":"Concrete - Paving - and Masonry"},{"item":"EARTH Auger Bit Dirtdawg","category":"Lawn and Landscape"},{"item":"EARTH AUGERS MAKITA","category":"Lawn and Landscape"},{"item":"EARTH AUGERS one man gas","category":"Lawn and Landscape"},{"item":"EDCO VAC","category":"Hand Tools"},{"item":"EDGER ATTACHMENT","category":"Lawn and Landscape"},{"item":"EDGER SANDER","category":"Floor and Surface"},{"item":"ELECTRIC CUTOFF SAW","category":"Concrete - Paving - and Masonry"},{"item":"ELECTRIC PALLET JACK","category":"Forklift and Material Handling"},{"item":"Equipment Move","category":"Vehicles and Trailers"},{"item":"EQUIPTER","category":"Vehicles and Trailers"},{"item":"Excavator brush mower","category":"Earthmoving"},{"item":"Excavator Plate Compactor/8k/12k","category":"Earthmoving"},{"item":"EXTENSION-CORE BITS","category":"Concrete - Paving - and Masonry"},{"item":"EXTRA CHAIN","category":"Lawn and Landscape"},{"item":"Extra Pressure Washer Hose, 50ft","category":"Hand Tools"},{"item":"FLOAT PAN Power Trowel","category":"Concrete - Paving - and Masonry"},{"item":"FORESTRY MULCHER","category":"Earthmoving"},{"item":"FORKLIFT","category":"Forklift and Material Handling"},{"item":"FORKLIFT JIB","category":"Earthmoving"},{"item":"FORM LINER","category":"Concrete - Paving - and Masonry"},{"item":"Fuel","category":"Sale Items"},{"item":"GARDEN STONE STAMP","category":"Concrete - Paving - and Masonry"},{"item":"GAS CUTOFF 14 INCH SAW","category":"Concrete - Paving - and Masonry"},{"item":"GAS CUTOFF 16 INCH SAW","category":"Concrete - Paving - and Masonry"},{"item":"GAS GRILL","category":"Event"},{"item":"GENERATOR 13000","category":"Power Generation - Lighting - and Distribution"},{"item":"GENERATOR 2500","category":"Power Generation - Lighting - and Distribution"},{"item":"GENERATOR 28KW","category":"Power Generation - Lighting - and Distribution"},{"item":"GENERATOR 4500w - 5000w","category":"Power Generation - Lighting - and Distribution"},{"item":"GENERATOR 6500","category":"Power Generation - Lighting - and Distribution"},{"item":"GENERATOR 7500","category":"Power Generation - Lighting - and Distribution"},{"item":"GRAPPLE (Root)-MINI","category":"Earthmoving"},{"item":"GRAPPLE BUCKET-L","category":"Earthmoving"},{"item":"GRASS BLADE","category":"Lawn and Landscape"},{"item":"GRIDDLE PLATE FOR GRILL","category":"Event"},{"item":"GRINDER-FLOOR","category":"Concrete - Paving - and Masonry"},{"item":"HAND FLOAT","category":"Concrete - Paving - and Masonry"},{"item":"Handheld Core Drill","category":"Concrete - Paving - and Masonry"},{"item":"HANDHELD-POST POUNDER","category":"Lawn and Landscape"},{"item":"Hilti Cordless Core Drill","category":"Concrete - Paving - and Masonry"},{"item":"HILTI VAC","category":"Hand Tools"},{"item":"HITCH 2 5-16 BALL","category":"Vehicles and Trailers"},{"item":"HOPPER EXT","category":"Concrete - Paving - and Masonry"},{"item":"HOSE 100FT X 3 INCH","category":"Plumbing and Electrical Equipment"},{"item":"HOSE 50FT X 2 INCH","category":"Plumbing and Electrical Equipment"},{"item":"HOSE 50FT X 3 INCH","category":"Plumbing and Electrical Equipment"},{"item":"HOSE 50FT X 4 INCH","category":"Plumbing and Electrical Equipment"},{"item":"HOT PRESSURE WASHER","category":"Hand Tools"},{"item":"HYDBREAKER - MINI E20/MT","category":"Earthmoving"},{"item":"HYDBREAKER - SKDSTR_EXEC","category":"Earthmoving"},{"item":"ICE CREAM MACHINE","category":"Other"},{"item":"JACK HAMMER 35LB","category":"Concrete - Paving - and Masonry"},{"item":"JACKHAMMER 60LB CLASS","category":"Concrete - Paving - and Masonry"},{"item":"JACKHAMMER CORDLESS 38LB","category":"Concrete - Paving - and Masonry"},{"item":"JIB-TELEBOOM","category":"Forklift and Material Handling"},{"item":"JUMPING JACK STOMPER GAS","category":"Compaction"},{"item":"KOMBI POWER UNIT","category":"Lawn and Landscape"},{"item":"Kombi POWERSWEEP","category":"Lawn and Landscape"},{"item":"LADDER-VATOR (HOIST)","category":"Scaffolding and Ladders"},{"item":"LANDSCAPE LIFTING VACUUM - EXCAVATOR","category":"Forklift and Material Handling"},{"item":"LANDSCAPE RAKE ROCKHOUND","category":"Earthmoving"},{"item":"Large 7x14 Cargo TRAILER","category":"Vehicles and Trailers"},{"item":"LASER LEVEL ROTARY","category":"Hand Tools"},{"item":"LAWN SPRAYER","category":"Lawn and Landscape"},{"item":"LEAF BLOWER- WALK BEHIND","category":"Lawn and Landscape"},{"item":"LEAF BLOWER-BACKPACK","category":"Lawn and Landscape"},{"item":"Log Grapple\/Branch Manager","category":"Earthmoving"},{"item":"LOG SPLITTER","category":"Lawn and Landscape"},{"item":"LUXURY RESTROOM 2STALL","category":"Sanitation"},{"item":"LUXURY RESTROOM 3STALL","category":"Sanitation"},{"item":"MAKITA Post Hole Auger 1 Man Battery","category":"Lawn and Landscape"},{"item":"MANUAL PALLET JACK","category":"Forklift and Material Handling"},{"item":"MASONRY SAW 16","category":"Concrete - Paving - and Masonry"},{"item":"MATERIAL-DUCT LIFT","category":"Forklift and Material Handling"},{"item":"MATS 4X8 POLY","category":"Other"},{"item":"MAXIM TILLER","category":"Lawn and Landscape"},{"item":"MF 18 IN OUTRIGGER","category":"Scaffolding and Ladders"},{"item":"MF SAFETY GUARD RAIL PAC","category":"Scaffolding and Ladders"},{"item":"MF SCAFFOLD 6FT","category":"Scaffolding and Ladders"},{"item":"MICRO TRENCHER TRAILER","category":"Vehicles and Trailers"},{"item":"Mini Brush Mower","category":"Earthmoving"},{"item":"MINI FORKS","category":"Earthmoving"},{"item":"MINI MAX TILLER - CULTIVATOR","category":"Lawn and Landscape"},{"item":"MINI ROCKHOUND","category":"Earthmoving"},{"item":"MINI SOIL CONDITIONER","category":"Earthmoving"},{"item":"Mixed Fuel Cans","category":"Hand Tools"},{"item":"MT100 - Mini Track Loader","category":"Earthmoving"},{"item":"MUD MIXER","category":"Concrete - Paving - and Masonry"},{"item":"ORBITAL SANDER","category":"Floor and Surface"},{"item":"OVERSEEDER","category":"Lawn and Landscape"},{"item":"OZONE GEN-1500","category":"HVAC"},{"item":"OZONE GEN-3000","category":"HVAC"},{"item":"PAVER GRIP HANDLE","category":"Concrete - Paving - and Masonry"},{"item":"PAVER ROLLER","category":"Compaction"},{"item":"PAVER SOLO T - HANDLE","category":"Concrete - Paving - and Masonry"},{"item":"PAVER VACUUM 2 PERSON","category":"Concrete - Paving - and Masonry"},{"item":"PIG TAIL HALF MOON","category":"Scaffolding and Ladders"},{"item":"PINTLE HITCH","category":"Vehicles and Trailers"},{"item":"PLATE COMPACTOR","category":"Compaction"},{"item":"PLATE COMPACTOR PAD","category":"Compaction"},{"item":"POLE PRUNER","category":"Lawn and Landscape"},{"item":"Post Hole Auger 1 Man Gas","category":"Lawn and Landscape"},{"item":"Post Hole Auger Towable","category":"Lawn and Landscape"},{"item":"Post Hole Auger Two Man","category":"Lawn and Landscape"},{"item":"POWER BUGGY WHITEMAN","category":"Concrete - Paving - and Masonry"},{"item":"PRESSURE WASHER SURFACE CLEANER","category":"Hand Tools"},{"item":"PRESSURE WASHER, GAS","category":"Hand Tools"},{"item":"PUMP-2 INCH DEWATERING","category":"Pumps"},{"item":"RANDOM STONE STAMP","category":"Concrete - Paving - and Masonry"},{"item":"REDEFINER","category":"Lawn and Landscape"},{"item":"REDUCER SLEEVE","category":"Vehicles and Trailers"},{"item":"REVERSIBLE PLATE 16INCH","category":"Compaction"},{"item":"ROOT GRAPPLE-L","category":"Earthmoving"},{"item":"RV 7 Blade to 4 Flat Adapter","category":"Vehicles and Trailers"},{"item":"Safety Work Platform for Telehandler","category":"Forklift and Material Handling"},{"item":"SAW CUTOFF BATTERY","category":"Hand Tools"},{"item":"SAWZALL M18","category":"Hand Tools"},{"item":"SDS Bits","category":"Hand Tools"},{"item":"SDSMAX ROTARY HAMMER DRILL 14LB","category":"Hand Tools"},{"item":"SDSMAX ROTARY HAMMER DRILL 26LB","category":"Hand Tools"},{"item":"SDSPLUS DRILL ROTARY HAMMER","category":"Hand Tools"},{"item":"Seed Box for Stinger","category":"Lawn and Landscape"},{"item":"SHOP VACUUM","category":"Hand Tools"},{"item":"Skid Soil Conditioner","category":"Earthmoving"},{"item":"SKID-POST POUNDER","category":"Lawn and Landscape"},{"item":"SKIDSTEER","category":"Earthmoving"},{"item":"SKIDSTEER 66\" TILLER","category":"Earthmoving"},{"item":"SKIDSTEER BROOM","category":"Earthmoving"},{"item":"SKIDSTEER STUMP GRINDER","category":"Earthmoving"},{"item":"SMOOTHBUCKET-L","category":"Earthmoving"},{"item":"SMOOTHBUCKET-MINI","category":"Earthmoving"},{"item":"Sod Cutter","category":"Lawn and Landscape"},{"item":"SPREADER- BROADCAST PUSH","category":"Lawn and Landscape"},{"item":"Stair Climbing Dolly, Battery Powered M-1","category":"Vehicles and Trailers"},{"item":"Stand On Topdresser, Seeder, and Aerator","category":"Lawn and Landscape"},{"item":"STD SAFETY GDRAIL PCKG","category":"Scaffolding and Ladders"},{"item":"Step \/ Stone Clamp","category":"Concrete - Paving - and Masonry"},{"item":"STEP LADDER 21FT","category":"Scaffolding and Ladders"},{"item":"Stihl Kombi Bristle brush","category":"Lawn and Landscape"},{"item":"Straw Blower","category":"Lawn and Landscape"},{"item":"STRINGTRIMMER","category":"Lawn and Landscape"},{"item":"STUMP GRINDER - 1700 LB","category":"Lawn and Landscape"},{"item":"STUMP GRINDER - 300LB","category":"Lawn and Landscape"},{"item":"STUMP GRINDER - 3200 LB","category":"Lawn and Landscape"},{"item":"Stump Grinder Trailer","category":"Vehicles and Trailers"},{"item":"TEXTURE MAT STONE STAMP- SEAMLESS","category":"Concrete - Paving - and Masonry"},{"item":"Tiller 3point","category":"Earthmoving"},{"item":"TILLER REAR TINE","category":"Lawn and Landscape"},{"item":"TILLER REAR TINE TRAILER","category":"Vehicles and Trailers"},{"item":"TOOTHBUCKET - L","category":"Earthmoving"},{"item":"TOOTHBUCKET - MINI","category":"Earthmoving"},{"item":"TOW KIT -STUMP GRINDER","category":"Lawn and Landscape"},{"item":"Track Buggy","category":"Concrete - Paving - and Masonry"},{"item":"Tractor with Loader","category":"Earthmoving"},{"item":"Tread Setter - Step \/ Versa-lok Clamp","category":"Concrete - Paving - and Masonry"},{"item":"Trencher - Medium, Barreto 912 (4\" x 24\")","category":"Lawn and Landscape"},{"item":"Trencher - Micro Barreto 712 (3.5\" x 18\")","category":"Lawn and Landscape"},{"item":"Trencher Attachment","category":"Trenching and Shoring"},{"item":"TRENCHER RIDE ON","category":"Lawn and Landscape"},{"item":"Trencher Trailer - Combo","category":"Vehicles and Trailers"},{"item":"Trencher with MT Mount","category":"Trenching and Shoring"},{"item":"TRI BALL HITCH","category":"Vehicles and Trailers"},{"item":"Utility Trailer","category":"Vehicles and Trailers"},{"item":"Van Ramp 37inch","category":"Other"},{"item":"Ventrac Aera-Vator","category":"Earthmoving"},{"item":"Ventrac Finish Mower","category":"Earthmoving"},{"item":"Ventrac Power Bucket","category":"Earthmoving"},{"item":"Ventrac Power Rake","category":"Earthmoving"},{"item":"Ventrac Snow Plow","category":"Earthmoving"},{"item":"Ventrac Tough Cut Mower","category":"Earthmoving"},{"item":"Vibrator - Concrete","category":"Concrete - Paving - and Masonry"},{"item":"Walk Behind Brush Cutter","category":"Lawn and Landscape"},{"item":"WALKBOARD ALUM 7FT","category":"Scaffolding and Ladders"},{"item":"WALKBOARD PLY 7FTX19IN","category":"Scaffolding and Ladders"},{"item":"Wand Telescoping","category":"Hand Tools"},{"item":"Wand Vac","category":"Hand Tools"},{"item":"Water Supply Backpack","category":"Lawn and Landscape"},{"item":"WHEEL FOR 5X5","category":"Scaffolding and Ladders"},{"item":"WHEELBARROW","category":"Lawn and Landscape"},{"item":"Winch and Controller 15K Trailer","category":"Vehicles and Trailers"},{"item":"Winch and Controller Deck Over","category":"Vehicles and Trailers"},{"item":"WIND GUARD FOR GRILL","category":"Event"},{"item":"WIRE INSTALLER","category":"Lawn and Landscape"},{"item":"Wire Installer Dog","category":"Lawn and Landscape"},{"item":"XL BULK BUCKET","category":"Earthmoving"},{"item":"YARD RAKE\/ Broom- BRANCH MANAGER","category":"Earthmoving"},{"item":"ZERO TURN MOWER","category":"Lawn and Landscape"},{"item":"— Item not listed","category":""}];
+
+let selectedReason = '';
+let highlightedIndex = -1;
+let currentMatches = [];
+
+document.getElementById('rentalDate').valueAsDate = new Date();
+
+function updateProgress() {
+  const fields = [
+    document.getElementById('staffName').value,
+    document.getElementById('rentalDate').value,
+    document.getElementById('itemSelected').value,
+    document.getElementById('duration').value,
+    document.getElementById('quantity').value,
+    selectedReason
+  ];
+  const filled = fields.filter(f => f && f !== '').length;
+  const pct = Math.round((filled / fields.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+['staffName','rentalDate','duration','quantity'].forEach(id => {
+  document.getElementById(id).addEventListener('change', updateProgress);
+});
+
+document.querySelectorAll('.reason-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.reason-pill').forEach(p => p.classList.remove('selected'));
+    pill.classList.add('selected');
+    selectedReason = pill.dataset.reason;
+    document.getElementById('err-reason').style.display = 'none';
+    updateProgress();
+  });
+});
+
+const itemSearch = document.getElementById('itemSearch');
+const suggestionBox = document.getElementById('suggestionBox');
+const itemSelected = document.getElementById('itemSelected');
+const categoryDisplay = document.getElementById('categoryDisplay');
+
+itemSearch.addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  itemSelected.value = '';
+  categoryDisplay.textContent = 'Auto-fills when you select an item';
+  categoryDisplay.classList.remove('filled');
+  highlightedIndex = -1;
+
+  if (q.length === 0) {
+    suggestionBox.classList.remove('open');
+    suggestionBox.innerHTML = '';
+    updateProgress();
+    return;
+  }
+
+  currentMatches = ITEMS.filter(i => i.item.toLowerCase().includes(q)).slice(0, 30);
+
+  if (currentMatches.length === 0) {
+    suggestionBox.innerHTML = '<div class="no-results">No matches — try a shorter word, or select "Item not listed"</div>';
+  } else {
+    suggestionBox.innerHTML = currentMatches.map((i, idx) =>
+      `<div class="suggestion-item" data-idx="${idx}">
+        ${i.item}
+        ${i.category ? `<span class="cat-badge">${i.category}</span>` : ''}
+      </div>`
+    ).join('');
+    suggestionBox.querySelectorAll('.suggestion-item').forEach(el => {
+      el.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        selectItem(parseInt(el.dataset.idx));
+      });
+    });
+  }
+  suggestionBox.classList.add('open');
+});
+
+function selectItem(idx) {
+  const match = currentMatches[idx];
+  if (!match) return;
+
+  if (match.item === '— Item not listed') {
+    itemSearch.value = 'Item not listed';
+    itemSelected.value = 'NOT_LISTED';
+    categoryDisplay.textContent = 'Will be noted in description below';
+    categoryDisplay.classList.add('filled');
+    document.getElementById('notListedField').style.display = 'block';
+  } else {
+    itemSearch.value = match.item;
+    itemSelected.value = match.item;
+    categoryDisplay.textContent = match.category || '—';
+    categoryDisplay.classList.add('filled');
+    document.getElementById('notListedField').style.display = 'none';
+  }
+  suggestionBox.classList.remove('open');
+  document.getElementById('err-item').style.display = 'none';
+  updateProgress();
+}
+
+itemSearch.addEventListener('keydown', function(e) {
+  const items = suggestionBox.querySelectorAll('.suggestion-item');
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('highlighted', i === highlightedIndex));
+    items[highlightedIndex].scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    highlightedIndex = Math.max(highlightedIndex - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('highlighted', i === highlightedIndex));
+    items[highlightedIndex].scrollIntoView({ block: 'nearest' });
+  } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+    e.preventDefault();
+    selectItem(highlightedIndex);
+  } else if (e.key === 'Escape') {
+    suggestionBox.classList.remove('open');
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrap')) {
+    suggestionBox.classList.remove('open');
+  }
+});
+
+async function handleSubmit() {
+  let valid = true;
+
+  function check(id, errId, condition) {
+    const el = document.getElementById(id);
+    const err = document.getElementById(errId);
+    if (!condition) {
+      el.classList.add('input-error');
+      err.style.display = 'block';
+      valid = false;
+    } else {
+      el.classList.remove('input-error');
+      err.style.display = 'none';
+    }
+  }
+
+  check('staffName', 'err-staffName', document.getElementById('staffName').value !== '');
+  check('rentalDate', 'err-rentalDate', document.getElementById('rentalDate').value !== '');
+  check('itemSearch', 'err-item', document.getElementById('itemSelected').value !== '');
+  check('duration', 'err-duration', document.getElementById('duration').value !== '');
+  check('quantity', 'err-quantity', document.getElementById('quantity').value !== '');
+
+  if (!selectedReason) {
+    document.getElementById('err-reason').style.display = 'block';
+    valid = false;
+  }
+
+  if (!valid) {
+    document.querySelector('.input-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const submission = {
+    timestamp: new Date().toISOString(),
+    staffName: document.getElementById('staffName').value,
+    date: document.getElementById('rentalDate').value,
+    item: document.getElementById('itemSelected').value === 'NOT_LISTED'
+      ? 'NOT LISTED: ' + document.getElementById('itemNotListed').value
+      : document.getElementById('itemSelected').value,
+    category: categoryDisplay.textContent,
+    duration: document.getElementById('duration').value,
+    quantity: document.getElementById('quantity').value,
+    reason: selectedReason,
+    notes: document.getElementById('notes').value
+  };
+
+  const btn = document.getElementById('submitBtn');
+  const errorBanner = document.getElementById('errorBanner');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  errorBanner.style.display = 'none';
+
+  try {
+    const response = await fetch(POWER_AUTOMATE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(submission)
+    });
+
+    if (!response.ok) throw new Error('Server returned ' + response.status);
+
+    document.getElementById('formBody').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    document.getElementById('progressFill').style.width = '100%';
+    window.scrollTo(0, 0);
+
+  } catch (err) {
+    errorBanner.style.display = 'block';
+    errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    btn.disabled = false;
+    btn.textContent = 'Submit report';
+  }
+}
+
+function resetForm() {
+  document.getElementById('staffName').value = '';
+  document.getElementById('rentalDate').valueAsDate = new Date();
+  document.getElementById('itemSearch').value = '';
+  document.getElementById('itemSelected').value = '';
+  document.getElementById('itemNotListed').value = '';
+  document.getElementById('notListedField').style.display = 'none';
+  categoryDisplay.textContent = 'Auto-fills when you select an item';
+  categoryDisplay.classList.remove('filled');
+  document.getElementById('duration').value = '';
+  document.getElementById('quantity').value = '1';
+  document.getElementById('notes').value = '';
+  document.querySelectorAll('.reason-pill').forEach(p => p.classList.remove('selected'));
+  selectedReason = '';
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('errorBanner').style.display = 'none';
+  document.getElementById('formBody').style.display = 'flex';
+  document.getElementById('successScreen').style.display = 'none';
+}
+</script>
+</body>
+</html>
