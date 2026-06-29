@@ -7,7 +7,7 @@ Use this file to restore context in a new Claude session. Paste the contents int
 ## What's built and working
 
 - **Form:** Custom HTML form at `https://tawtechdabbling.github.io/MissedRentals/` — fully functional, no login required for staff
-- **Form file (local):** `/Users/thomaswagler/Library/CloudStorage/OneDrive-DutchRentalz/Apps/Missed Rentals app/index.html`
+- **Form file (local):** `C:\Users\Tommy\OneDrive - Dutch Rentalz\Apps\Missed Rentals app\index.html`
 - **GitHub repo:** `https://github.com/tawtechdabbling/MissedRentals`
 - **CORRECT Google Sheet ID:** `1rM1Zn_lvD9TzDImPW8Q3JmyWVhfrMEPH_20vTJOikO8`
 - **Google Sheet URL:** `https://docs.google.com/spreadsheets/d/1rM1Zn_lvD9TzDImPW8Q3JmyWVhfrMEPH_20vTJOikO8/edit`
@@ -42,65 +42,21 @@ Two functions exist:
 
 The script uses `SpreadsheetApp.openById('1rM1Zn_lvD9TzDImPW8Q3JmyWVhfrMEPH_20vTJOikO8')`.
 
-## Power BI status
+## Power BI — FULLY COMPLETE
 
-- Power BI Desktop installed on Windows
-- .pbix file exists
-- **In progress:** Reconnecting to correct Google Sheet from scratch
-- Power BI Export URL to use: `https://docs.google.com/spreadsheets/d/1rM1Zn_lvD9TzDImPW8Q3JmyWVhfrMEPH_20vTJOikO8/export?format=xlsx`
-- Old data sources were deleted; new ones being added via Get Data → Web
-- Navigator window opened successfully with Submissions and Item Rate Sheet visible
-- Authentication: Anonymous (works because sheet is set to Anyone with link can view)
-- **Stopped at:** User clicked Transform Data in Navigator — need to continue from Power Query
+- **Local file:** `C:\Users\Tommy\OneDrive - Dutch Rentalz\Apps\Missed Rentals app\Missed rentals.pbix`
+- **Published to:** app.powerbi.com → My Workspace → "Missed rentals"
+- **Data source:** Google Sheets via Web connector (anonymous auth)
+- **Export URL:** `https://docs.google.com/spreadsheets/d/1rM1Zn_lvD9TzDImPW8Q3JmyWVhfrMEPH_20vTJOikO8/export?format=xlsx`
 
-## DAX calculated column for Missed Revenue
+## Power Query (already applied — do not redo)
 
-In Submissions table, Data view, New Column:
+Both tables have these steps applied:
+- **Submissions:** Source → Navigation → Promoted Headers → Changed Type → Removed Blank Rows → Removed Errors
+- **Item Rate Sheet:** Source → Navigation → Promoted Headers → Changed Type → Removed Blank Rows → Removed Errors
 
-```
-Missed Revenue =
-VAR rate =
-    SWITCH(Submissions[Duration],
-        "4 Hours", RELATED('Item Rate Sheet'[4 Hours]),
-        "Day",     RELATED('Item Rate Sheet'[Day]),
-        "Week",    RELATED('Item Rate Sheet'[Week]),
-        "4 Weeks", RELATED('Item Rate Sheet'[4 Week])
-    )
-RETURN rate * Submissions[Quantity]
-```
+## Relationship (already created)
 
-Note: Item Rate Sheet column names are: `4 Hours`, `Day`, `Week`, `4 Week` (singular, mixed case)
+Submissions[Item] → Item Rate Sheet[Description], many-to-one (*:1), cross filter both directions, active
 
-## Relationship needed in Power BI
-
-Submissions[Item] → Item Rate Sheet[Description], many-to-one, cross filter both directions
-
-## Power Query steps needed (apply each time data is loaded)
-
-For both Submissions and Item Rate Sheet:
-- Remove Blank Rows (Home → Remove Rows → Remove Blank Rows) on key columns
-- Remove Errors (Home → Remove Rows → Remove Errors) on all columns
-
-## Visuals to build
-
-Tommy wants:
-1. Total missed revenue (Card visual)
-2. Missed revenue by item, broken down by month, quarter, and year (Matrix visual)
-3. Missed revenue by reason (Clustered bar chart)
-
-## Next steps
-
-1. Complete Power Query setup for the two new tables (remove blanks/errors)
-2. Close & Apply in Power Query
-3. Set up relationship: Submissions[Item] → Item Rate Sheet[Description]
-4. Add Missed Revenue DAX calculated column
-5. Build the three visuals above
-6. Publish to Power BI web (app.powerbi.com) so Tommy can view on any browser/device
-
-## Key decisions made
-
-- Staff have no Microsoft accounts — form must be publicly accessible (no login)
-- Rejected: Power Automate, SharePoint, Make.com
-- Chose: Google Sheets as data store, GitHub Pages for form hosting
-- No price field on form — missed revenue calculated in Power BI via DAX
-- Historical import was attempted but caused issues — Tommy decided to skip for now and start fresh with live submissions only
+## DAX calculated column (already added to Submissions table)
