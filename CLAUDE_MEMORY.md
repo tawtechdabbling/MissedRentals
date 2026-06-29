@@ -60,3 +60,27 @@ Both tables have these steps applied:
 Submissions[Item] → Item Rate Sheet[Description], many-to-one (*:1), cross filter both directions, active
 
 ## DAX calculated column (already added to Submissions table)
+Missed Revenue =
+VAR rate =
+SWITCH(Submissions[Duration],
+"4 Hours", RELATED('Item Rate Sheet'[4 Hours]),
+"Day", RELATED('Item Rate Sheet'[Day]),
+"Week", RELATED('Item Rate Sheet'[Week]),
+"4 Weeks", RELATED('Item Rate Sheet'[4 Week])
+)
+RETURN rate * Submissions[Quantity]
+
+## Visuals on Page 1 (all built)
+1. **Card** — Total Missed Revenue (Sum of Missed Revenue)
+2. **Matrix** — Rows: Item | Columns: RentalDate (Year/Quarter/Month/Day hierarchy) | Values: Sum of Missed Revenue
+3. **Clustered bar chart** — "Sum of Missed Revenue by Reason" | Y-axis: Reason | X-axis: Sum of Missed Revenue
+4. **Clustered column chart** — "Top 20 Items by Missed Revenue" | X-axis: Item | Y-axis: Sum of Missed Revenue | Top N filter: Top 20 by Sum of Missed Revenue
+5. **Date slicer** — Field: RentalDate | Title renamed to "Date Controller" | Filters all visuals on the page
+## Key decisions made
+- Staff have no Microsoft accounts — form must be publicly accessible (no login)
+- Rejected: Power Automate, SharePoint, Make.com
+- Chose: Google Sheets as data store, GitHub Pages for form hosting
+- No price field on form — missed revenue calculated in Power BI via DAX
+- Historical import was attempted but caused issues — Tommy decided to skip and start fresh with live submissions only
+- Power BI published to My Workspace (private — for Tommy's use only)
+- To refresh data in Power BI web: open report → click Refresh
